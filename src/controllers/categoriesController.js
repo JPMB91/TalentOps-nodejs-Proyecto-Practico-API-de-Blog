@@ -69,7 +69,7 @@ async function updateCategoria(req, res) {
   try {
     const { id } = req.params;
 
-    const categoria = categorias.find((c) => c.id === id);
+    const categoria = categorias.find((c) => c.id === parseInt(id));
 
     if (!categoria) {
       return res.status(400).json({ error: "Categoría no encontrada" });
@@ -99,7 +99,7 @@ async function updateCategoria(req, res) {
 async function deleteCategoria(req, res) {
   try {
     const { id } = req.params;
-    const indice = categorias.findIndex((p) => p.id === id);
+    const indice = categorias.findIndex((p) => p.id === parseInt(id));
 
     if (indice === -1) {
       return res.status(404).json({
