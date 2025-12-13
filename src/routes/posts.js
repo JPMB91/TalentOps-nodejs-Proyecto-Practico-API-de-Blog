@@ -1,7 +1,13 @@
 const express = require("express");
 const { body, param, query, validationResult } = require("express-validator");
 const { authenticate, authorize } = require("../middleware/auth");
-const { getPosts, getPostById, createPost, updatePost, deletePost } = require("../controllers/postsController");
+const {
+  getPosts,
+  getPostById,
+  createPost,
+  updatePost,
+  deletePost,
+} = require("../controllers/postsController");
 
 const router = express.Router();
 
@@ -31,8 +37,16 @@ router.get(
       .withMessage("Límite debe estar entre 1 y 100"),
     query("ordenar")
       .optional()
-      .isIn(["titulo", "visitas", "fechaCreacion"])
+      .isIn(["titulo", "visitas", "fechaCreacion", "relevancia"])
       .withMessage("Ordenamiento inválido"),
+    query("fields")
+      .optional()
+      .custom((value) => {
+        if (Array.isArray(value)) {
+          return value.every((f) => ["titulo", "contenido"].includes(f));
+        }
+        return ["titulo", "contenido"].includes(value);
+      }).withMessage( "Campos inválidos para la búsqueda"),
   ],
   validarErrores,
   getPosts

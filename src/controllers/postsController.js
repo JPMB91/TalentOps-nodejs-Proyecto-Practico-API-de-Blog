@@ -24,16 +24,22 @@ async function getPosts(req, res) {
   try {
     let resultados = [...posts];
     const {
+      q,
+      fields = ["titulo", "contenido"],
       autor,
       estado,
       etiqueta,
-      busqueda,
-      categoria,
-      ordenar = "fechaCreacion",
+      etiquetas,
+      categoria_id,
+      fechaDesde,
+      fechaHasta,
+      ordenar = "relevancia",
       pagina = 1,
       limite = 10,
-      categoria_id,
+      busqueda
     } = req.query;
+
+    let puntajes = new Map();
 
     // Filtros
     if (autor) {
@@ -47,20 +53,65 @@ async function getPosts(req, res) {
     if (etiqueta) {
       resultados = resultados.filter((p) => p.etiquetas.includes(etiqueta));
     }
+
+    if (etiquetas) {
+      const etiquetasBuscar = Array.isArray(etiquetas)
+        ? etiquetas
+        : [etiquetas];
+
+      resultados - resultados.filter((e) => etiquetasBuscar.includes(e));
+    }
     if (categoria_id) {
       resultados = resultados.filter(
         (t) => t.categoriaId === parseInt(req.query.categoria_id)
       );
     }
 
+    if (fechaDesde) {
+      resultados = resultados.filter(
+        (p) => p.fechaCreacion >= new Date(fechaDesde)
+      );
+    }
+    if (fechaHasta) {
+      resultados = resultados.filter(
+        (p) => p.fechaCreacion <= new Date(fechaHasta)
+      );
+    }
     // Búsqueda
     if (busqueda) {
       const termino = busqueda.toLowerCase();
-      resultados = resultados.filter(
-        (p) =>
-          p.titulo.toLowerCase().includes(termino) ||
-          p.contenido.toLowerCase().includes(termino)
-      );
+      const palabras = termino.split(" ").filter(Boolean);
+      const camposBusqueda = Array.isArray(fields) ? fields : [fields];
+
+      resultados = resultados.filter((post) => {
+        let puntaje = 0;
+        1;
+
+        camposBusqueda.forEach((campo) => {
+          if (post[campo]) {
+            const textoCompleto = post[campo].toLowerCase();
+
+            if (textoCompleto.includes(termino)) {
+              puntaje += 10;
+            }
+
+            palabras.forEach((palabra) => {
+              if (textoCompleto.includes(palabra)) {
+                puntaje += 3;
+              }
+            });
+            if (campo === "titulo" && textoCompleto.includes(termino)) {
+              puntaje += 5;
+            }
+          }
+        });
+
+        if (puntaje > 0) {
+          puntajes.set(post.id, puntaje);
+          return true;
+        }
+        return false;
+      });
     }
 
     // Ordenamiento
@@ -70,6 +121,13 @@ async function getPosts(req, res) {
           return a.titulo.localeCompare(b.titulo);
         case "visitas":
           return b.visitas - a.visitas;
+
+        case "relevancia": {
+          if (busqueda) {
+            return (puntajes.get(b.id) || 0) - (puntajes.get(a.id) || 0);
+          }
+          return new Date(b.fechaCreacion) - new Date(a.fechaCreacion);
+        }
         case "fechaCreacion":
         default:
           return new Date(b.fechaCreacion) - new Date(a.fechaCreacion);
@@ -82,8 +140,15 @@ async function getPosts(req, res) {
     const inicio = (paginaNum - 1) * limiteNum;
     const paginados = resultados.slice(inicio, inicio + limiteNum);
 
+    resultadosFinales = busqueda
+      ? paginados.map((post) => ({
+          ...post,
+          _puntajes: puntajes.get(post.id) || 0,
+        }))
+      : paginados;
+
     res.json({
-      posts: paginados,
+      posts: resultadosFinales,
       meta: {
         total: resultados.length,
         pagina: paginaNum,
