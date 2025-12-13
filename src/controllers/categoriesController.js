@@ -8,6 +8,7 @@ let siguienteIdCategoria = 5;
 
 async function getCategorias(req, res) {
   try {
+    
     res.json({
       categorias,
       meta: { total: categorias.length },
@@ -53,7 +54,7 @@ async function createCategoria(req, res) {
 
     categorias.push(nuevaCategoria);
     res.status(201).json({
-      message: "Categoría crada exitosamente",
+      message: "Categoría creada exitosamente",
       categorias: nuevaCategoria,
     });
   } catch (error) {

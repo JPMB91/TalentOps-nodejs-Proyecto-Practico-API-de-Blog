@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
-const { getCategorias } = require("./categoriesController");
+const { getCategorias, getCategoriasData } = require("./categoriesController");
 
-const categorias = getCategorias();
+const categorias = getCategoriasData();
 
 // Base de datos simulada
 let posts = [
@@ -192,7 +192,7 @@ async function updatePost(req, res) {
     if (contenido) post.contenido = contenido.trim();
     if (etiquetas) post.etiquetas = etiquetas;
     if (estado) post.estado = estado;
-    if (categoria) post.categoriaId = categoriaId;
+    if (categoriaId) post.categoriaId = categoriaId;
 
     post.fechaActualizacion = new Date().toISOString();
 
