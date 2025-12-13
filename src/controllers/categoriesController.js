@@ -3,8 +3,9 @@ let categorias = [
   { id: 2, nombre: "Politica" },
   { id: 3, nombre: "Ciencia" },
   { id: 4, nombre: "Informaciones" },
+  { id: 4, nombre: "Programación" },
 ];
-let siguienteIdCategoria = 5;
+let siguienteIdCategoria = 6;
 
 async function getCategorias(req, res) {
   try {

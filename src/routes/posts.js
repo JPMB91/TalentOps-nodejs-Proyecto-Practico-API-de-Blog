@@ -7,6 +7,7 @@ const {
   createPost,
   updatePost,
   deletePost,
+  publishPost,
 } = require("../controllers/postsController");
 
 const router = express.Router();
@@ -86,6 +87,16 @@ router.post(
   validarErrores,
   createPost
 );
+
+router.post("/publish/:id", 
+  authenticate,
+  authorize("author", "admin"),
+  [
+    param("id").isUUID().withMessage("ID debe ser un UUID válido"),
+  ],
+  validarErrores,
+  publishPost
+)
 
 // PUT /posts/:id - Actualizar post (requiere autenticación y permisos)
 router.put(

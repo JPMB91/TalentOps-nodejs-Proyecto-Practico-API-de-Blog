@@ -17,7 +17,53 @@ let posts = [
     fechaActualizacion: new Date().toISOString(),
     visitas: 0,
   },
+  {
+    id: uuidv4(),
+    titulo: "Bases de Javascript",
+    contenido: "Este post contempla las bases de Javascript",
+    autor: "admin",
+    etiquetas: ["javascript", "fundamentos", "programacion"],
+    categoriaId: 5,
+    estado: "borrador",
+    fechaCreacion: new Date().toISOString(),
+    fechaActualizacion: new Date().toISOString(),
+    visitas: 0,
+  },
 ];
+
+async function publishPost(req, res) {
+  try {
+    const { id } = req.params;
+    const post = posts.find((p) => p.id === id);
+
+    if (!post) {
+      return res.status(404).json({
+        error: "Post no encontrado",
+      });
+    }
+
+    if (post.autor !== req.user.username && req.user.role !== "admin") {
+      return res.status(403).json({
+        error: "No tienes permisos para publicar este post",
+      });
+    }
+
+    post.estado =
+      post.estado.toLocaleLowerCase() === "borrador" ? (post.estado = "publicado") : "borrador";
+    post.fechaActualizacion = new Date().toISOString();
+    res.status(200).json({
+      message: `Post ${
+        post.estado === "publicado" ? "publicado" : "despublicado"
+      } exitosamente`,
+      post,
+    });
+  } catch (error) {
+    console.error("Error publicando el post:", error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+    });
+  }
+}
 
 // Obtener todos los posts
 async function getPosts(req, res) {
@@ -36,7 +82,7 @@ async function getPosts(req, res) {
       ordenar = "relevancia",
       pagina = 1,
       limite = 10,
-      busqueda
+      busqueda,
     } = req.query;
 
     let puntajes = new Map();
@@ -319,4 +365,5 @@ module.exports = {
   updatePost,
   deletePost,
   getPostsData,
+  publishPost,
 };
