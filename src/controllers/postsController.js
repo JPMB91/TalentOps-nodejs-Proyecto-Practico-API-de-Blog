@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
 const { getCategorias, getCategoriasData } = require("./categoriesController");
+const sendEmail = require("../utils/emailSender");
 
 const categorias = getCategoriasData();
 
@@ -48,9 +49,17 @@ async function publishPost(req, res) {
       });
     }
 
-    post.estado =
-      post.estado.toLocaleLowerCase() === "borrador" ? (post.estado = "publicado") : "borrador";
-    post.fechaActualizacion = new Date().toISOString();
+    try {
+      post.estado =
+        post.estado.toLocaleLowerCase() === "borrador"
+          ? (post.estado = "publicado")
+          : "borrador";
+      post.fechaActualizacion = new Date().toISOString();
+      sendEmail(post);
+    } catch (emailError) {
+      console.error("Error enviando notificación");
+    }
+
     res.status(200).json({
       message: `Post ${
         post.estado === "publicado" ? "publicado" : "despublicado"
