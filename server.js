@@ -204,7 +204,7 @@ app.get("/", (req, res) => {
     </head>
     <body>
       <h1>📝 API de Blog Completa</h1>
-      <p>API REST con Express.js para gestión de posts y comentarios.</p>
+      <p>API REST con Express.js para gestión de posts, comentarios y categorías.</p>
 
       <h2>🔐 Autenticación</h2>
       <div class="endpoint">
@@ -222,7 +222,20 @@ app.get("/", (req, res) => {
       <h2>📄 Posts</h2>
       <div class="endpoint">
         <span class="method">GET</span> <code>/api/posts</code> <span class="public">Público</span>
-        <p>Listar posts con filtros y paginación.</p>
+        <p>Listar posts con filtros y paginación. Soporta búsqueda avanzada.</p>
+        <details>
+          <summary>Parámetros de búsqueda</summary>
+          <ul>
+            <li><code>busqueda</code> - Texto a buscar</li>
+            <li><code>fields</code> - Campos donde buscar (titulo, contenido)</li>
+            <li><code>autor</code> - Filtrar por autor</li>
+            <li><code>estado</code> - Filtrar por estado</li>
+            <li><code>categoria_id</code> - Filtrar por categoría</li>
+            <li><code>etiquetas</code> - Filtrar por etiquetas</li>
+            <li><code>fechaDesde / fechaHasta</code> - Rango de fechas</li>
+            <li><code>ordenar</code> - relevancia, fecha, visitas, titulo</li>
+          </ul>
+        </details>
       </div>
 
       <div class="endpoint">
@@ -241,18 +254,49 @@ app.get("/", (req, res) => {
       </div>
 
       <div class="endpoint">
+        <span class="method">POST</span> <code>/api/posts/publish/:id</code> <span class="auth">Requiere Auth</span>
+        <p>Publicar/despublicar post (toggle estado). Envía notificación por correo.</p>
+      </div>
+
+      <div class="endpoint">
         <span class="method">DELETE</span> <code>/api/posts/:id</code> <span class="auth">Requiere Auth</span>
         <p>Eliminar post (solo autor o admin).</p>
       </div>
 
+      <h2>🏷️ Categorías</h2>
+      <div class="endpoint">
+        <span class="method">GET</span> <code>/api/categories</code> <span class="public">Público</span>
+        <p>Listar todas las categorías.</p>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">GET</span> <code>/api/categories/:id</code> <span class="public">Público</span>
+        <p>Obtener categoría específica.</p>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">POST</span> <code>/api/categories</code> <span class="auth">Requiere Auth (Admin)</span>
+        <p>Crear nueva categoría.</p>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">PUT</span> <code>/api/categories/:id</code> <span class="auth">Requiere Auth (Admin)</span>
+        <p>Actualizar categoría.</p>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">DELETE</span> <code>/api/categories/:id</code> <span class="auth">Requiere Auth (Admin)</span>
+        <p>Eliminar categoría.</p>
+      </div>
+
       <h2>💬 Comentarios</h2>
       <div class="endpoint">
-        <span class="method">GET</span> <code>/api/posts/:postId/comments</code> <span class="public">Público</span>
+        <span class="method">GET</span> <code>/api/comments/:postId</code> <span class="public">Público</span>
         <p>Obtener comentarios de un post.</p>
       </div>
 
       <div class="endpoint">
-        <span class="method">POST</span> <code>/api/posts/:postId/comments</code> <span class="public">Público</span>
+        <span class="method">POST</span> <code>/api/comments/:postId</code> <span class="public">Público</span>
         <p>Crear comentario en un post.</p>
       </div>
 
@@ -275,8 +319,14 @@ app.get("/", (req, res) => {
       <h3>2. Listar posts:</h3>
       <code>curl http://localhost:3000/api/posts</code>
 
-      <h3>3. Crear post (usar token del login):</h3>
-      <code>curl -X POST http://localhost:3000/api/posts -H "Content-Type: application/json" -H "Authorization: Bearer TU_TOKEN" -d '{"titulo":"Mi Post","contenido":"Contenido del post"}'</code>
+      <h3>3. Búsqueda avanzada:</h3>
+      <code>curl "http://localhost:3000/api/posts?busqueda=javascript&ordenar=relevancia"</code>
+
+      <h3>4. Crear categoría (admin):</h3>
+      <code>curl -X POST http://localhost:3000/api/categories -H "Content-Type: application/json" -H "Authorization: Bearer TU_TOKEN" -d '{"nombre":"Tecnología"}'</code>
+
+      <h3>5. Publicar post:</h3>
+      <code>curl -X POST http://localhost:3000/api/posts/publish/POST_ID -H "Authorization: Bearer TU_TOKEN"</code>
     </body>
     </html>
   `);
